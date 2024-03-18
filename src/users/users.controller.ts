@@ -26,8 +26,12 @@ export class UsersController {
   ) {}
 
   @Get('/whoami')
-  whoAmI(@Session() session: any) {
-    return this.usersService.findOne(session.userId);
+  async whoAmI(@Session() session: any) {
+    const user = await this.usersService.findOne(session.userId);
+    if (!user) {
+      throw new NotFoundException('user not sign in');
+    }
+    return user;
   }
 
   @Post('/signup')
@@ -35,6 +39,11 @@ export class UsersController {
     const user = await this.authService.signup(body.email, body.password);
     session.userId = user.id;
     return user;
+  }
+
+  @Post('/signout')
+  signOut(@Session() session: any) {
+    session.userId = null;
   }
 
   @Post('/signin')
